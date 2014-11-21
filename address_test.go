@@ -1,16 +1,16 @@
 // Copyright (c) 2013-2014 Conformal Systems LLC.
 // Use of this source code is governed by an ISC
 // license that can be found in the LICENSE file.
-package btcscript_test
+package rddscript_test
 
 import (
 	"encoding/hex"
 	"reflect"
 	"testing"
 
-	"github.com/conformal/btcnet"
-	"github.com/conformal/btcscript"
-	"github.com/conformal/btcutil"
+	"github.com/reddcoin-project/rddnet"
+	"github.com/reddcoin-project/rddscript"
+	"github.com/reddcoin-project/rddutil"
 )
 
 // decodeHex decodes the passed hex string and returns the resulting bytes.  It
@@ -26,13 +26,13 @@ func decodeHex(hexStr string) []byte {
 	return b
 }
 
-// newAddressPubKey returns a new btcutil.AddressPubKey from the provided
+// newAddressPubKey returns a new rddutil.AddressPubKey from the provided
 // serialized public key.  It panics if an error occurs.  This is only used in
 // the tests as a helper since the only way it can fail is if there is an error
 // in the test source code.
-func newAddressPubKey(serializedPubKey []byte) btcutil.Address {
-	addr, err := btcutil.NewAddressPubKey(serializedPubKey,
-		&btcnet.MainNetParams)
+func newAddressPubKey(serializedPubKey []byte) rddutil.Address {
+	addr, err := rddutil.NewAddressPubKey(serializedPubKey,
+		&rddnet.MainNetParams)
 	if err != nil {
 		panic("invalid public key in test source")
 	}
@@ -40,12 +40,12 @@ func newAddressPubKey(serializedPubKey []byte) btcutil.Address {
 	return addr
 }
 
-// newAddressPubKeyHash returns a new btcutil.AddressPubKeyHash from the
+// newAddressPubKeyHash returns a new rddutil.AddressPubKeyHash from the
 // provided hash.  It panics if an error occurs.  This is only used in the tests
 // as a helper since the only way it can fail is if there is an error in the
 // test source code.
-func newAddressPubKeyHash(pkHash []byte) btcutil.Address {
-	addr, err := btcutil.NewAddressPubKeyHash(pkHash, &btcnet.MainNetParams)
+func newAddressPubKeyHash(pkHash []byte) rddutil.Address {
+	addr, err := rddutil.NewAddressPubKeyHash(pkHash, &rddnet.MainNetParams)
 	if err != nil {
 		panic("invalid public key hash in test source")
 	}
@@ -53,13 +53,13 @@ func newAddressPubKeyHash(pkHash []byte) btcutil.Address {
 	return addr
 }
 
-// newAddressScriptHash returns a new btcutil.AddressScriptHash from the
+// newAddressScriptHash returns a new rddutil.AddressScriptHash from the
 // provided hash.  It panics if an error occurs.  This is only used in the tests
 // as a helper since the only way it can fail is if there is an error in the
 // test source code.
-func newAddressScriptHash(scriptHash []byte) btcutil.Address {
-	addr, err := btcutil.NewAddressScriptHashFromHash(scriptHash,
-		&btcnet.MainNetParams)
+func newAddressScriptHash(scriptHash []byte) rddutil.Address {
+	addr, err := rddutil.NewAddressScriptHashFromHash(scriptHash,
+		&rddnet.MainNetParams)
 	if err != nil {
 		panic("invalid script hash in test source")
 	}
@@ -73,21 +73,21 @@ func TestExtractPkScriptAddrs(t *testing.T) {
 	tests := []struct {
 		name    string
 		script  []byte
-		addrs   []btcutil.Address
+		addrs   []rddutil.Address
 		reqSigs int
-		class   btcscript.ScriptClass
+		class   rddscript.ScriptClass
 	}{
 		{
 			name: "standard p2pk with compressed pubkey (0x02)",
 			script: decodeHex("2102192d74d0cb94344c9569c2e7790157" +
 				"3d8d7903c3ebec3a957724895dca52c6b4ac"),
-			addrs: []btcutil.Address{
+			addrs: []rddutil.Address{
 				newAddressPubKey(decodeHex("02192d74d0cb94344" +
 					"c9569c2e77901573d8d7903c3ebec3a95772" +
 					"4895dca52c6b4")),
 			},
 			reqSigs: 1,
-			class:   btcscript.PubKeyTy,
+			class:   rddscript.PubKeyTy,
 		},
 		{
 			name: "standard p2pk with uncompressed pubkey (0x04)",
@@ -95,7 +95,7 @@ func TestExtractPkScriptAddrs(t *testing.T) {
 				"1eb68a382e97b1482ecad7b148a6909a5cb2e0eaddfb" +
 				"84ccf9744464f82e160bfa9b8b64f9d4c03f999b8643" +
 				"f656b412a3ac"),
-			addrs: []btcutil.Address{
+			addrs: []rddutil.Address{
 				newAddressPubKey(decodeHex("0411db93e1dcdb8a0" +
 					"16b49840f8c53bc1eb68a382e97b1482ecad" +
 					"7b148a6909a5cb2e0eaddfb84ccf9744464f" +
@@ -103,7 +103,7 @@ func TestExtractPkScriptAddrs(t *testing.T) {
 					"412a3")),
 			},
 			reqSigs: 1,
-			class:   btcscript.PubKeyTy,
+			class:   rddscript.PubKeyTy,
 		},
 		{
 			name: "standard p2pk with hybrid pubkey (0x06)",
@@ -111,7 +111,7 @@ func TestExtractPkScriptAddrs(t *testing.T) {
 				"3d8d7903c3ebec3a957724895dca52c6b40d45264838" +
 				"c0bd96852662ce6a847b197376830160c6d2eb5e6a4c" +
 				"44d33f453eac"),
-			addrs: []btcutil.Address{
+			addrs: []rddutil.Address{
 				newAddressPubKey(decodeHex("06192d74d0cb94344" +
 					"c9569c2e77901573d8d7903c3ebec3a95772" +
 					"4895dca52c6b40d45264838c0bd96852662c" +
@@ -119,19 +119,19 @@ func TestExtractPkScriptAddrs(t *testing.T) {
 					"f453e")),
 			},
 			reqSigs: 1,
-			class:   btcscript.PubKeyTy,
+			class:   rddscript.PubKeyTy,
 		},
 		{
 			name: "standard p2pk with compressed pubkey (0x03)",
 			script: decodeHex("2103b0bd634234abbb1ba1e986e884185c" +
 				"61cf43e001f9137f23c2c409273eb16e65ac"),
-			addrs: []btcutil.Address{
+			addrs: []rddutil.Address{
 				newAddressPubKey(decodeHex("03b0bd634234abbb1" +
 					"ba1e986e884185c61cf43e001f9137f23c2c" +
 					"409273eb16e65")),
 			},
 			reqSigs: 1,
-			class:   btcscript.PubKeyTy,
+			class:   rddscript.PubKeyTy,
 		},
 		{
 			name: "2nd standard p2pk with uncompressed pubkey (0x04)",
@@ -139,7 +139,7 @@ func TestExtractPkScriptAddrs(t *testing.T) {
 				"61cf43e001f9137f23c2c409273eb16e6537a576782e" +
 				"ba668a7ef8bd3b3cfb1edb7117ab65129b8a2e681f3c" +
 				"1e0908ef7bac"),
-			addrs: []btcutil.Address{
+			addrs: []rddutil.Address{
 				newAddressPubKey(decodeHex("04b0bd634234abbb1" +
 					"ba1e986e884185c61cf43e001f9137f23c2c" +
 					"409273eb16e6537a576782eba668a7ef8bd3" +
@@ -147,7 +147,7 @@ func TestExtractPkScriptAddrs(t *testing.T) {
 					"8ef7b")),
 			},
 			reqSigs: 1,
-			class:   btcscript.PubKeyTy,
+			class:   rddscript.PubKeyTy,
 		},
 		{
 			name: "standard p2pk with hybrid pubkey (0x07)",
@@ -155,7 +155,7 @@ func TestExtractPkScriptAddrs(t *testing.T) {
 				"61cf43e001f9137f23c2c409273eb16e6537a576782e" +
 				"ba668a7ef8bd3b3cfb1edb7117ab65129b8a2e681f3c" +
 				"1e0908ef7bac"),
-			addrs: []btcutil.Address{
+			addrs: []rddutil.Address{
 				newAddressPubKey(decodeHex("07b0bd634234abbb1" +
 					"ba1e986e884185c61cf43e001f9137f23c2c" +
 					"409273eb16e6537a576782eba668a7ef8bd3" +
@@ -163,29 +163,29 @@ func TestExtractPkScriptAddrs(t *testing.T) {
 					"8ef7b")),
 			},
 			reqSigs: 1,
-			class:   btcscript.PubKeyTy,
+			class:   rddscript.PubKeyTy,
 		},
 		{
 			name: "standard p2pkh",
 			script: decodeHex("76a914ad06dd6ddee55cbca9a9e3713bd7" +
 				"587509a3056488ac"),
-			addrs: []btcutil.Address{
+			addrs: []rddutil.Address{
 				newAddressPubKeyHash(decodeHex("ad06dd6ddee55" +
 					"cbca9a9e3713bd7587509a30564")),
 			},
 			reqSigs: 1,
-			class:   btcscript.PubKeyHashTy,
+			class:   rddscript.PubKeyHashTy,
 		},
 		{
 			name: "standard p2sh",
 			script: decodeHex("a91463bcc565f9e68ee0189dd5cc67f1b0" +
 				"e5f02f45cb87"),
-			addrs: []btcutil.Address{
+			addrs: []rddutil.Address{
 				newAddressScriptHash(decodeHex("63bcc565f9e68" +
 					"ee0189dd5cc67f1b0e5f02f45cb")),
 			},
 			reqSigs: 1,
-			class:   btcscript.ScriptHashTy,
+			class:   rddscript.ScriptHashTy,
 		},
 		// from real tx 60a20bd93aa49ab4b28d514ec10b06e1829ce6818ec06cd3aabd013ebcdc4bb1, vout 0
 		{
@@ -197,7 +197,7 @@ func TestExtractPkScriptAddrs(t *testing.T) {
 				"354d80e550078cb532a34bfa2fcfdeb7d76519aecc62" +
 				"770f5b0e4ef8551946d8a540911abe3e7854a26f39f5" +
 				"8b25c15342af52ae"),
-			addrs: []btcutil.Address{
+			addrs: []rddutil.Address{
 				newAddressPubKey(decodeHex("04cc71eb30d653c0c" +
 					"3163990c47b976f3fb3f37cccdcbedb169a1" +
 					"dfef58bbfbfaff7d8a473e7e2e6d317b87ba" +
@@ -210,7 +210,7 @@ func TestExtractPkScriptAddrs(t *testing.T) {
 					"342af")),
 			},
 			reqSigs: 1,
-			class:   btcscript.MultiSigTy,
+			class:   rddscript.MultiSigTy,
 		},
 		// from real tx d646f82bd5fbdb94a36872ce460f97662b80c3050ad3209bef9d1e398ea277ab, vin 1
 		{
@@ -225,7 +225,7 @@ func TestExtractPkScriptAddrs(t *testing.T) {
 				"bbf781c5410d3f22a7a3a56ffefb2238af8627363bdf" +
 				"2ed97c1f89784a1aecdb43384f11d2acc64443c7fc29" +
 				"9cef0400421a53ae"),
-			addrs: []btcutil.Address{
+			addrs: []rddutil.Address{
 				newAddressPubKey(decodeHex("04cb9c3c222c5f7a7" +
 					"d3b9bd152f363a0b6d54c9eb312c4d4f9af1" +
 					"e8551b6c421a6a4ab0e29105f24de20ff463" +
@@ -243,7 +243,7 @@ func TestExtractPkScriptAddrs(t *testing.T) {
 					"0421a")),
 			},
 			reqSigs: 2,
-			class:   btcscript.MultiSigTy,
+			class:   rddscript.MultiSigTy,
 		},
 
 		// The below are nonstandard script due to things such as
@@ -258,7 +258,7 @@ func TestExtractPkScriptAddrs(t *testing.T) {
 				"f656b412a3"),
 			addrs:   nil,
 			reqSigs: 0,
-			class:   btcscript.NonStandardTy,
+			class:   rddscript.NonStandardTy,
 		},
 		{
 			name: "valid signature from a sigscript - no addresses",
@@ -268,7 +268,7 @@ func TestExtractPkScriptAddrs(t *testing.T) {
 				"4622082221a8768d1d0901"),
 			addrs:   nil,
 			reqSigs: 0,
-			class:   btcscript.NonStandardTy,
+			class:   rddscript.NonStandardTy,
 		},
 		// Note the technically the pubkey is the second item on the
 		// stack, but since the address extraction intentionally only
@@ -285,7 +285,7 @@ func TestExtractPkScriptAddrs(t *testing.T) {
 				"a75a71042d40388a4d307f887d"),
 			addrs:   nil,
 			reqSigs: 0,
-			class:   btcscript.NonStandardTy,
+			class:   rddscript.NonStandardTy,
 		},
 		// from real tx 691dd277dc0e90a462a3d652a1171686de49cf19067cd33c7df0392833fb986a, vout 0
 		// invalid public keys
@@ -301,9 +301,9 @@ func TestExtractPkScriptAddrs(t *testing.T) {
 				"6e20626520666f756e6420696e207472616e73616374" +
 				"696f6e20366335336364393837313139656637393764" +
 				"35616463636453ae"),
-			addrs:   []btcutil.Address{},
+			addrs:   []rddutil.Address{},
 			reqSigs: 1,
-			class:   btcscript.MultiSigTy,
+			class:   rddscript.MultiSigTy,
 		},
 		// from real tx: 691dd277dc0e90a462a3d652a1171686de49cf19067cd33c7df0392833fb986a, vout 44
 		// invalid public keys
@@ -317,30 +317,30 @@ func TestExtractPkScriptAddrs(t *testing.T) {
 				"39636634633033633630396335393363336539316665" +
 				"64653730323921313233646434326432353633396433" +
 				"38613663663530616234636434340a00000053ae"),
-			addrs:   []btcutil.Address{},
+			addrs:   []rddutil.Address{},
 			reqSigs: 1,
-			class:   btcscript.MultiSigTy,
+			class:   rddscript.MultiSigTy,
 		},
 		{
 			name:    "empty script",
 			script:  []byte{},
 			addrs:   nil,
 			reqSigs: 0,
-			class:   btcscript.NonStandardTy,
+			class:   rddscript.NonStandardTy,
 		},
 		{
 			name:    "script that does not parse",
-			script:  []byte{btcscript.OP_DATA_45},
+			script:  []byte{rddscript.OP_DATA_45},
 			addrs:   nil,
 			reqSigs: 0,
-			class:   btcscript.NonStandardTy,
+			class:   rddscript.NonStandardTy,
 		},
 	}
 
 	t.Logf("Running %d tests.", len(tests))
 	for i, test := range tests {
-		class, addrs, reqSigs, err := btcscript.ExtractPkScriptAddrs(
-			test.script, &btcnet.MainNetParams)
+		class, addrs, reqSigs, err := rddscript.ExtractPkScriptAddrs(
+			test.script, &rddnet.MainNetParams)
 		if err != nil {
 		}
 

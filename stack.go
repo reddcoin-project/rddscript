@@ -2,7 +2,7 @@
 // Use of this source code is governed by an ISC
 // license that can be found in the LICENSE file.
 
-package btcscript
+package rddscript
 
 import (
 	"encoding/hex"
@@ -96,7 +96,7 @@ func fromBool(v bool) []byte {
 	return []byte{0}
 }
 
-// Stack represents a stack of immutable objects to be used with bitcoin scripts
+// Stack represents a stack of immutable objects to be used with Reddcoin scripts
 // Objects may be shared,  therefore in usage if a value is to be changed it
 // *must* be deep-copied first to avoid changing other values on the stack.
 type Stack struct {

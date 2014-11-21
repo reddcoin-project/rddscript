@@ -2,7 +2,7 @@
 // Use of this source code is governed by an ISC
 // license that can be found in the LICENSE file.
 
-package btcscript_test
+package rddscript_test
 
 import (
 	"errors"
@@ -10,7 +10,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/conformal/btcscript"
+	"github.com/reddcoin-project/rddscript"
 )
 
 func TestSetLogWriter(t *testing.T) {
@@ -48,7 +48,7 @@ func TestSetLogWriter(t *testing.T) {
 
 	t.Logf("Running %d tests", len(tests))
 	for i, test := range tests {
-		err := btcscript.SetLogWriter(test.w, test.level)
+		err := rddscript.SetLogWriter(test.w, test.level)
 		if err != nil {
 			if err.Error() != test.expected.Error() {
 				t.Errorf("SetLogWriter #%d (%s) wrong result\n"+

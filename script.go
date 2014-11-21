@@ -2,7 +2,7 @@
 // Use of this source code is governed by an ISC
 // license that can be found in the LICENSE file.
 
-package btcscript
+package rddscript
 
 import (
 	"bytes"
@@ -12,9 +12,9 @@ import (
 	"time"
 
 	"github.com/conformal/btcec"
-	"github.com/conformal/btcnet"
-	"github.com/conformal/btcutil"
-	"github.com/conformal/btcwire"
+	"github.com/reddcoin-project/rddnet"
+	"github.com/reddcoin-project/rddutil"
+	"github.com/reddcoin-project/rddwire"
 )
 
 var (
@@ -134,7 +134,7 @@ const (
 )
 
 // ErrUnsupportedAddress is returned when a concrete type that implements
-// a btcutil.Address is not a supported type.
+// a rddutil.Address is not a supported type.
 var ErrUnsupportedAddress = errors.New("unsupported address type")
 
 // Bip16Activation is the timestamp where BIP0016 is valid to use in the
@@ -193,7 +193,7 @@ func (t ScriptClass) String() string {
 	return scriptClassToName[t]
 }
 
-// Script is the virtual machine that executes btcscripts.
+// Script is the virtual machine that executes rddscripts.
 type Script struct {
 	scripts         [][]parsedOpcode
 	scriptidx       int
@@ -201,7 +201,7 @@ type Script struct {
 	lastcodesep     int
 	dstack          Stack // data stack
 	astack          Stack // alt stack
-	tx              btcwire.MsgTx
+	tx              rddwire.MsgTx
 	txidx           int
 	condStack       []int
 	numOps          int
@@ -500,7 +500,7 @@ const (
 	// signature checks are performed when parsing a signature.
 	//
 	// Canonical (DER) signatures are not required in the tx rules for
-	// block acceptance, but are checked in recent versions of bitcoind
+	// block acceptance, but are checked in recent versions of Reddcoind
 	// when accepting transactions to the mempool.  Non-canonical (valid
 	// BER but not valid DER) transactions can potentially be changed
 	// before mined into a block, either by adding extra padding or
@@ -519,7 +519,7 @@ const (
 // a signature script scriptSig and a pubkeyscript scriptPubKey. If bip16 is
 // true then it will be treated as if the bip16 threshhold has passed and thus
 // pay-to-script hash transactions will be fully validated.
-func NewScript(scriptSig []byte, scriptPubKey []byte, txidx int, tx *btcwire.MsgTx, flags ScriptFlags) (*Script, error) {
+func NewScript(scriptSig []byte, scriptPubKey []byte, txidx int, tx *rddwire.MsgTx, flags ScriptFlags) (*Script, error) {
 	var m Script
 	scripts := [][]byte{scriptSig, scriptPubKey}
 	m.scripts = make([][]parsedOpcode, len(scripts))
@@ -805,7 +805,7 @@ func DisasmString(buf []byte) (string, error) {
 // calcScriptHash will, given the a script and hashtype for the current
 // scriptmachine, calculate the doubleSha256 hash of the transaction and
 // script to be used for signature signing and verification.
-func calcScriptHash(script []parsedOpcode, hashType SigHashType, tx *btcwire.MsgTx, idx int) []byte {
+func calcScriptHash(script []parsedOpcode, hashType SigHashType, tx *rddwire.MsgTx, idx int) []byte {
 
 	// remove all instances of OP_CODESEPARATOR still left in the script
 	script = removeOpcode(script, OP_CODESEPARATOR)
@@ -814,7 +814,7 @@ func calcScriptHash(script []parsedOpcode, hashType SigHashType, tx *btcwire.Msg
 	// for all inputs that are not currently being processed.
 	txCopy := tx.Copy()
 	for i := range txCopy.TxIn {
-		var txIn btcwire.TxIn
+		var txIn rddwire.TxIn
 		txIn = *txCopy.TxIn[i]
 		txCopy.TxIn[i] = &txIn
 		if i == idx {
@@ -828,7 +828,7 @@ func calcScriptHash(script []parsedOpcode, hashType SigHashType, tx *btcwire.Msg
 	}
 	// Default behaviour has all outputs set up.
 	for i := range txCopy.TxOut {
-		var txOut btcwire.TxOut
+		var txOut rddwire.TxOut
 		txOut = *txCopy.TxOut[i]
 		txCopy.TxOut[i] = &txOut
 	}
@@ -844,7 +844,7 @@ func calcScriptHash(script []parsedOpcode, hashType SigHashType, tx *btcwire.Msg
 	case SigHashSingle:
 		if idx >= len(txCopy.TxOut) {
 			// This was created by a buggy implementation.
-			// In this case we do the same as bitcoind and bitcoinj
+			// In this case we do the same as Reddcoind and Reddcoinj
 			// and return 1 (as a uint256 little endian) as an
 			// error. Unfortunately this was not checked anywhere
 			// and thus is treated as the actual
@@ -867,7 +867,7 @@ func calcScriptHash(script []parsedOpcode, hashType SigHashType, tx *btcwire.Msg
 			}
 		}
 	default:
-		// XXX bitcoind treats undefined hashtypes like normal
+		// XXX Reddcoind treats undefined hashtypes like normal
 		// SigHashAll for purposes of hash generation.
 		fallthrough
 	case SigHashOld:
@@ -885,7 +885,7 @@ func calcScriptHash(script []parsedOpcode, hashType SigHashType, tx *btcwire.Msg
 	// Append LE 4 bytes hash type
 	binary.Write(&wbuf, binary.LittleEndian, uint32(hashType))
 
-	return btcwire.DoubleSha256(wbuf.Bytes())
+	return rddwire.DoubleSha256(wbuf.Bytes())
 }
 
 // getStack returns the contents of stack as a byte array bottom up
@@ -1041,21 +1041,21 @@ func payToPubKeyScript(serializedPubKey []byte) []byte {
 
 // PayToAddrScript creates a new script to pay a transaction output to a the
 // specified address.
-func PayToAddrScript(addr btcutil.Address) ([]byte, error) {
+func PayToAddrScript(addr rddutil.Address) ([]byte, error) {
 	switch addr := addr.(type) {
-	case *btcutil.AddressPubKeyHash:
+	case *rddutil.AddressPubKeyHash:
 		if addr == nil {
 			return nil, ErrUnsupportedAddress
 		}
 		return payToPubKeyHashScript(addr.ScriptAddress()), nil
 
-	case *btcutil.AddressScriptHash:
+	case *rddutil.AddressScriptHash:
 		if addr == nil {
 			return nil, ErrUnsupportedAddress
 		}
 		return payToScriptHashScript(addr.ScriptAddress()), nil
 
-	case *btcutil.AddressPubKey:
+	case *rddutil.AddressPubKey:
 		if addr == nil {
 			return nil, ErrUnsupportedAddress
 		}
@@ -1073,7 +1073,7 @@ var ErrBadNumRequired = errors.New("more signatures required than keys present")
 // nrequired of the keys in pubkeys are required to have signed the transaction
 // for success. An ErrBadNumRequired will be returned if nrequired is larger than
 // the number of keys provided.
-func MultiSigScript(pubkeys []*btcutil.AddressPubKey, nrequired int) ([]byte, error) {
+func MultiSigScript(pubkeys []*rddutil.AddressPubKey, nrequired int) ([]byte, error) {
 	if len(pubkeys) < nrequired {
 		return nil, ErrBadNumRequired
 	}
@@ -1097,7 +1097,7 @@ func MultiSigScript(pubkeys []*btcutil.AddressPubKey, nrequired int) ([]byte, er
 // serialized in either a compressed or uncompressed format based on
 // compress. This format must match the same format used to generate
 // the payment address, or the script validation will fail.
-func SignatureScript(tx *btcwire.MsgTx, idx int, subscript []byte, hashType SigHashType, privKey *btcec.PrivateKey, compress bool) ([]byte, error) {
+func SignatureScript(tx *rddwire.MsgTx, idx int, subscript []byte, hashType SigHashType, privKey *btcec.PrivateKey, compress bool) ([]byte, error) {
 	sig, err := signTxOutput(tx, idx, subscript, hashType, privKey)
 	if err != nil {
 		return nil, err
@@ -1114,7 +1114,7 @@ func SignatureScript(tx *btcwire.MsgTx, idx int, subscript []byte, hashType SigH
 	return NewScriptBuilder().AddData(sig).AddData(pkData).Script(), nil
 }
 
-func signTxOutput(tx *btcwire.MsgTx, idx int, subScript []byte,
+func signTxOutput(tx *rddwire.MsgTx, idx int, subScript []byte,
 	hashType SigHashType, key *btcec.PrivateKey) ([]byte, error) {
 	parsedScript, err := parseScript(subScript)
 	if err != nil {
@@ -1129,7 +1129,7 @@ func signTxOutput(tx *btcwire.MsgTx, idx int, subScript []byte,
 	return append(signature.Serialize(), byte(hashType)), nil
 }
 
-func p2pkSignatureScript(tx *btcwire.MsgTx, idx int, subScript []byte, hashType SigHashType, privKey *btcec.PrivateKey) ([]byte, error) {
+func p2pkSignatureScript(tx *rddwire.MsgTx, idx int, subScript []byte, hashType SigHashType, privKey *btcec.PrivateKey) ([]byte, error) {
 	sig, err := signTxOutput(tx, idx, subScript, hashType, privKey)
 	if err != nil {
 		return nil, err
@@ -1142,8 +1142,8 @@ func p2pkSignatureScript(tx *btcwire.MsgTx, idx int, subScript []byte, hashType 
 // possible. It returns the generated script and a boolean if the script fulfils
 // the contract (i.e. nrequired signatures are provided).  Since it is arguably
 // legal to not be able to sign any of the outputs, no error is returned.
-func signMultiSig(tx *btcwire.MsgTx, idx int, subScript []byte, hashType SigHashType,
-	addresses []btcutil.Address, nRequired int, kdb KeyDB) ([]byte, bool) {
+func signMultiSig(tx *rddwire.MsgTx, idx int, subScript []byte, hashType SigHashType,
+	addresses []rddutil.Address, nRequired int, kdb KeyDB) ([]byte, bool) {
 	// We start with a single OP_FALSE to work around the (now standard)
 	// but in the reference implementation that causes a spurious pop at
 	// the end of OP_CHECKMULTISIG.
@@ -1170,9 +1170,9 @@ func signMultiSig(tx *btcwire.MsgTx, idx int, subScript []byte, hashType SigHash
 	return builder.Script(), signed == nRequired
 }
 
-func sign(net *btcnet.Params, tx *btcwire.MsgTx, idx int, subScript []byte,
+func sign(net *rddnet.Params, tx *rddwire.MsgTx, idx int, subScript []byte,
 	hashType SigHashType, kdb KeyDB, sdb ScriptDB) ([]byte, ScriptClass,
-	[]btcutil.Address, int, error) {
+	[]rddutil.Address, int, error) {
 
 	class, addresses, nrequired, err := ExtractPkScriptAddrs(subScript, net)
 	if err != nil {
@@ -1234,8 +1234,8 @@ func sign(net *btcnet.Params, tx *btcwire.MsgTx, idx int, subScript []byte,
 // The return value is the best effort merging of the two scripts. Calling this
 // function with addresses, class and nrequired that do not match pkScript is
 // an error and results in undefined behaviour.
-func mergeScripts(net *btcnet.Params, tx *btcwire.MsgTx, idx int,
-	pkScript []byte, class ScriptClass, addresses []btcutil.Address,
+func mergeScripts(net *rddnet.Params, tx *rddwire.MsgTx, idx int,
+	pkScript []byte, class ScriptClass, addresses []rddutil.Address,
 	nRequired int, sigScript, prevScript []byte) []byte {
 
 	// TODO(oga) the scripthash and multisig paths here are overly
@@ -1300,7 +1300,7 @@ func mergeScripts(net *btcnet.Params, tx *btcwire.MsgTx, idx int,
 // pkScript. Since this function is internal only we assume that the arguments
 // have come from other functions internally and thus are all consistent with
 // each other, behaviour is undefined if this contract is broken.
-func mergeMultiSig(tx *btcwire.MsgTx, idx int, addresses []btcutil.Address,
+func mergeMultiSig(tx *rddwire.MsgTx, idx int, addresses []rddutil.Address,
 	nRequired int, pkScript, sigScript, prevScript []byte) []byte {
 
 	// This is an internal only function and we already parsed this script
@@ -1366,7 +1366,7 @@ sigLoop:
 			// All multisig addresses should be pubkey addreses
 			// it is an error to call this internal function with
 			// bad input.
-			pkaddr := addr.(*btcutil.AddressPubKey)
+			pkaddr := addr.(*rddutil.AddressPubKey)
 
 			pubKey := pkaddr.PubKey()
 
@@ -1411,14 +1411,14 @@ sigLoop:
 // KeyDB is an interface type provided to SignTxOutput, it encapsulates
 // any user state required to get the private keys for an address.
 type KeyDB interface {
-	GetKey(btcutil.Address) (*btcec.PrivateKey, bool, error)
+	GetKey(rddutil.Address) (*btcec.PrivateKey, bool, error)
 }
 
 // KeyClosure implements ScriptDB with a closure
-type KeyClosure func(btcutil.Address) (*btcec.PrivateKey, bool, error)
+type KeyClosure func(rddutil.Address) (*btcec.PrivateKey, bool, error)
 
 // GetKey implements KeyDB by returning the result of calling the closure
-func (kc KeyClosure) GetKey(address btcutil.Address) (*btcec.PrivateKey,
+func (kc KeyClosure) GetKey(address rddutil.Address) (*btcec.PrivateKey,
 	bool, error) {
 	return kc(address)
 }
@@ -1426,14 +1426,14 @@ func (kc KeyClosure) GetKey(address btcutil.Address) (*btcec.PrivateKey,
 // ScriptDB is an interface type provided to SignTxOutput, it encapsulates
 // any user state required to get the scripts for an pay-to-script-hash address.
 type ScriptDB interface {
-	GetScript(btcutil.Address) ([]byte, error)
+	GetScript(rddutil.Address) ([]byte, error)
 }
 
 // ScriptClosure implements ScriptDB with a closure
-type ScriptClosure func(btcutil.Address) ([]byte, error)
+type ScriptClosure func(rddutil.Address) ([]byte, error)
 
 // GetScript implements ScriptDB by returning the result of calling the closure
-func (sc ScriptClosure) GetScript(address btcutil.Address) ([]byte, error) {
+func (sc ScriptClosure) GetScript(address rddutil.Address) ([]byte, error) {
 	return sc(address)
 }
 
@@ -1444,7 +1444,7 @@ func (sc ScriptClosure) GetScript(address btcutil.Address) ([]byte, error) {
 // getScript. If previousScript is provided then the results in previousScript
 // will be merged in a type-dependant manner with the newly generated.
 // signature script.
-func SignTxOutput(net *btcnet.Params, tx *btcwire.MsgTx, idx int,
+func SignTxOutput(net *rddnet.Params, tx *rddwire.MsgTx, idx int,
 	pkScript []byte, hashType SigHashType, kdb KeyDB, sdb ScriptDB,
 	previousScript []byte) ([]byte, error) {
 
@@ -1502,7 +1502,7 @@ func expectedInputs(pops []parsedOpcode, class ScriptClass) int {
 		// of sigs and number of keys.  Check the first push instruction
 		// to see how many arguments are expected. typeOfScript already
 		// checked this so we know it'll be a small int.  Also, due to
-		// the original bitcoind bug where OP_CHECKMULTISIG pops an
+		// the original Reddcoind bug where OP_CHECKMULTISIG pops an
 		// additional item from the stack, add an extra expected input
 		// for the extra push that is required to compensate.
 		return asSmallInt(pops[0].opcode) + 1

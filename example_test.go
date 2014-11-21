@@ -2,41 +2,41 @@
 // Use of this source code is governed by an ISC
 // license that can be found in the LICENSE file.
 
-package btcscript_test
+package rddscript_test
 
 import (
 	"encoding/hex"
 	"fmt"
 
-	"github.com/conformal/btcnet"
-	"github.com/conformal/btcscript"
-	"github.com/conformal/btcutil"
+	"github.com/reddcoin-project/rddnet"
+	"github.com/reddcoin-project/rddscript"
+	"github.com/reddcoin-project/rddutil"
 )
 
-// This example demonstrates creating a script which pays to a bitcoin address.
+// This example demonstrates creating a script which pays to a Reddcoin address.
 // It also prints the created script hex and uses the DisasmString function to
 // display the disassembled script.
 func ExamplePayToAddrScript() {
-	// Parse the address to send the coins to into a btcutil.Address
+	// Parse the address to send the coins to into a rddutil.Address
 	// which is useful to ensure the accuracy of the address and determine
 	// the address type.  It is also required for the upcoming call to
 	// PayToAddrScript.
 	addressStr := "12gpXQVcCL2qhTNQgyLVdCFG2Qs2px98nV"
-	address, err := btcutil.DecodeAddress(addressStr, &btcnet.MainNetParams)
+	address, err := rddutil.DecodeAddress(addressStr, &rddnet.MainNetParams)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
 	// Create a public key script that pays to the address.
-	script, err := btcscript.PayToAddrScript(address)
+	script, err := rddscript.PayToAddrScript(address)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	fmt.Printf("Script Hex: %x\n", script)
 
-	disasm, err := btcscript.DisasmString(script)
+	disasm, err := rddscript.DisasmString(script)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -60,8 +60,8 @@ func ExampleExtractPkScriptAddrs() {
 	}
 
 	// Extract and print details from the script.
-	scriptClass, addresses, reqSigs, err := btcscript.ExtractPkScriptAddrs(
-		script, &btcnet.MainNetParams)
+	scriptClass, addresses, reqSigs, err := rddscript.ExtractPkScriptAddrs(
+		script, &rddnet.MainNetParams)
 	if err != nil {
 		fmt.Println(err)
 		return

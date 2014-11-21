@@ -2,19 +2,19 @@
 // Use of this source code is governed by an ISC
 // license that can be found in the LICENSE file.
 
-package btcscript
+package rddscript
 
 import (
-	"github.com/conformal/btcnet"
-	"github.com/conformal/btcutil"
+	"github.com/reddcoin-project/rddnet"
+	"github.com/reddcoin-project/rddutil"
 )
 
 // ExtractPkScriptAddrs returns the type of script, addresses and required
 // signatures associated with the passed PkScript.  Note that it only works for
 // 'standard' transaction script types.  Any data such as public keys which are
 // invalid are omitted from the results.
-func ExtractPkScriptAddrs(pkScript []byte, net *btcnet.Params) (ScriptClass, []btcutil.Address, int, error) {
-	var addrs []btcutil.Address
+func ExtractPkScriptAddrs(pkScript []byte, net *rddnet.Params) (ScriptClass, []rddutil.Address, int, error) {
+	var addrs []rddutil.Address
 	var requiredSigs int
 
 	// No valid addresses or required signatures if the script doesn't
@@ -32,7 +32,7 @@ func ExtractPkScriptAddrs(pkScript []byte, net *btcnet.Params) (ScriptClass, []b
 		// Therefore the pubkey hash is the 3rd item on the stack.
 		// Skip the pubkey hash if it's invalid for some reason.
 		requiredSigs = 1
-		addr, err := btcutil.NewAddressPubKeyHash(pops[2].data, net)
+		addr, err := rddutil.NewAddressPubKeyHash(pops[2].data, net)
 		if err == nil {
 			addrs = append(addrs, addr)
 		}
@@ -43,7 +43,7 @@ func ExtractPkScriptAddrs(pkScript []byte, net *btcnet.Params) (ScriptClass, []b
 		// Therefore the pubkey is the first item on the stack.
 		// Skip the pubkey if it's invalid for some reason.
 		requiredSigs = 1
-		addr, err := btcutil.NewAddressPubKey(pops[0].data, net)
+		addr, err := rddutil.NewAddressPubKey(pops[0].data, net)
 		if err == nil {
 			addrs = append(addrs, addr)
 		}
@@ -54,7 +54,7 @@ func ExtractPkScriptAddrs(pkScript []byte, net *btcnet.Params) (ScriptClass, []b
 		// Therefore the script hash is the 2nd item on the stack.
 		// Skip the script hash if it's invalid for some reason.
 		requiredSigs = 1
-		addr, err := btcutil.NewAddressScriptHashFromHash(pops[1].data, net)
+		addr, err := rddutil.NewAddressScriptHashFromHash(pops[1].data, net)
 		if err == nil {
 			addrs = append(addrs, addr)
 		}
@@ -69,9 +69,9 @@ func ExtractPkScriptAddrs(pkScript []byte, net *btcnet.Params) (ScriptClass, []b
 		numPubKeys := asSmallInt(pops[len(pops)-2].opcode)
 
 		// Extract the public keys while skipping any that are invalid.
-		addrs = make([]btcutil.Address, 0, numPubKeys)
+		addrs = make([]rddutil.Address, 0, numPubKeys)
 		for i := 0; i < numPubKeys; i++ {
-			addr, err := btcutil.NewAddressPubKey(pops[i+1].data, net)
+			addr, err := rddutil.NewAddressPubKey(pops[i+1].data, net)
 			if err == nil {
 				addrs = append(addrs, addr)
 			}

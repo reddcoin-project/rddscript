@@ -2,7 +2,7 @@
 // Use of this source code is governed by an ISC
 // license that can be found in the LICENSE file.
 
-package btcscript
+package rddscript
 
 import (
 	"encoding/hex"
@@ -14,8 +14,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/conformal/btcutil"
-	"github.com/conformal/btcwire"
+	"github.com/reddcoin-project/rddutil"
+	"github.com/reddcoin-project/rddwire"
 )
 
 // this file is present to export some internal interfaces so that we can
@@ -3737,7 +3737,7 @@ func parseHex(tok string) ([]byte, error) {
 	return hex.DecodeString(tok[2:])
 }
 
-// ParseShortForm parses a string as as used in the bitcoind reference tests
+// ParseShortForm parses a string as as used in the Reddcoind reference tests
 // into the script it came from.
 func ParseShortForm(script string) ([]byte, error) {
 	ops := make(map[string]*opcode)
@@ -3806,7 +3806,7 @@ func TestBitcoindInvalidTests(t *testing.T) {
 			err)
 		return
 	}
-	tx := btcwire.NewMsgTx()
+	tx := rddwire.NewMsgTx()
 	for x, test := range tests {
 		if len(test) < 2 && len(test) > 3 {
 			t.Errorf("TestBitcoindInvalidTests: invalid test #%d\n",
@@ -3857,7 +3857,7 @@ func TestBitcoindValidTests(t *testing.T) {
 			err)
 		return
 	}
-	tx := btcwire.NewMsgTx()
+	tx := rddwire.NewMsgTx()
 	for x, test := range tests {
 		if len(test) < 2 && len(test) > 3 {
 			t.Errorf("TestBitcoindInvalidTests: invalid test #%d\n",
@@ -3939,7 +3939,7 @@ testloop:
 			continue
 		}
 
-		tx, err := btcutil.NewTxFromBytes(serializedTx)
+		tx, err := rddutil.NewTxFromBytes(serializedTx)
 		if err != nil {
 			t.Errorf("bad test (arg 2 not msgtx %v) %d: %v", err,
 				i, test)
@@ -3963,7 +3963,7 @@ testloop:
 			}
 		}
 
-		prevOuts := make(map[btcwire.OutPoint][]byte)
+		prevOuts := make(map[rddwire.OutPoint][]byte)
 		for j, iinput := range inputs {
 			input, ok := iinput.([]interface{})
 			if !ok {
@@ -3985,7 +3985,7 @@ testloop:
 				continue
 			}
 
-			prevhash, err := btcwire.NewShaHashFromStr(previoustx)
+			prevhash, err := rddwire.NewShaHashFromStr(previoustx)
 			if err != nil {
 				t.Errorf("bad test (%dth input sha not sha %v)"+
 					"%d: %v", j, err, i, test)
@@ -4015,7 +4015,7 @@ testloop:
 				continue
 			}
 
-			prevOuts[*btcwire.NewOutPoint(prevhash, idx)] = script
+			prevOuts[*rddwire.NewOutPoint(prevhash, idx)] = script
 		}
 
 		for k, txin := range tx.MsgTx().TxIn {
@@ -4085,7 +4085,7 @@ testloop:
 			continue
 		}
 
-		tx, err := btcutil.NewTxFromBytes(serializedTx)
+		tx, err := rddutil.NewTxFromBytes(serializedTx)
 		if err != nil {
 			t.Errorf("bad test (arg 2 not msgtx %v) %d: %v", err,
 				i, test)
@@ -4109,7 +4109,7 @@ testloop:
 			}
 		}
 
-		prevOuts := make(map[btcwire.OutPoint][]byte)
+		prevOuts := make(map[rddwire.OutPoint][]byte)
 		for j, iinput := range inputs {
 			input, ok := iinput.([]interface{})
 			if !ok {
@@ -4131,7 +4131,7 @@ testloop:
 				continue testloop
 			}
 
-			prevhash, err := btcwire.NewShaHashFromStr(previoustx)
+			prevhash, err := rddwire.NewShaHashFromStr(previoustx)
 			if err != nil {
 				t.Errorf("bad test (%dth input sha not sha %v)"+
 					"%d: %v", j, err, i, test)
@@ -4161,7 +4161,7 @@ testloop:
 				continue testloop
 			}
 
-			prevOuts[*btcwire.NewOutPoint(prevhash, idx)] = script
+			prevOuts[*rddwire.NewOutPoint(prevhash, idx)] = script
 		}
 
 		for k, txin := range tx.MsgTx().TxIn {

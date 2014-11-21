@@ -2,7 +2,7 @@
 // Use of this source code is governed by an ISC
 // license that can be found in the LICENSE file.
 
-package btcscript
+package rddscript
 
 import (
 	"bytes"
@@ -15,11 +15,11 @@ import (
 
 	"code.google.com/p/go.crypto/ripemd160"
 	"github.com/conformal/btcec"
-	"github.com/conformal/btcwire"
+	"github.com/reddcoin-project/rddwire"
 	"github.com/conformal/fastsha256"
 )
 
-// An opcode defines the information related to a btcscript opcode.
+// An opcode defines the information related to a rddscript opcode.
 // opfunc if present is the function to call to perform the opcode on
 // the script. The current script is passed in as a slice with the firs
 // member being the opcode itself.
@@ -32,7 +32,7 @@ type opcode struct {
 }
 
 // These constants are the values of the official opcode used on the btc wiki,
-// in bitcoind and in most if not all other references and software related to
+// in Reddcoind and in most if not all other references and software related to
 // handling BTC scripts.
 const (
 	OP_FALSE               = 0 // AKA OP_0
@@ -290,9 +290,9 @@ const (
 	OP_UNKNOWN250          = 250
 	OP_UNKNOWN251          = 251
 	OP_UNKNOWN252          = 252
-	OP_PUBKEYHASH          = 253 // bitcoind internal, for completeness
-	OP_PUBKEY              = 254 // bitcoind internal, for completeness
-	OP_INVALIDOPCODE       = 255 // bitcoind internal, for completeness
+	OP_PUBKEYHASH          = 253 // Reddcoind internal, for completeness
+	OP_PUBKEY              = 254 // Reddcoind internal, for completeness
+	OP_INVALIDOPCODE       = 255 // Reddcoind internal, for completeness
 )
 
 // conditional execution constants
@@ -1056,7 +1056,7 @@ func opcodeReserved(op *parsedOpcode, s *Script) error {
 	return ErrStackReservedOpcode
 }
 
-// Recognised opcode, but for bitcoind internal use only.
+// Recognised opcode, but for Reddcoind internal use only.
 func opcodeInvalid(op *parsedOpcode, s *Script) error {
 	return ErrStackInvalidOpcode
 }
@@ -1739,7 +1739,7 @@ func opcodeHash256(op *parsedOpcode, s *Script) error {
 		return err
 	}
 
-	s.dstack.PushByteArray(btcwire.DoubleSha256(buf))
+	s.dstack.PushByteArray(rddwire.DoubleSha256(buf))
 	return nil
 }
 
@@ -1900,7 +1900,7 @@ func opcodeCheckMultiSig(op *parsedOpcode, s *Script) error {
 		}
 	}
 
-	// bug in bitcoind mean we pop one more stack value than should be used.
+	// bug in Reddcoind mean we pop one more stack value than should be used.
 	dummy, err := s.dstack.PopByteArray()
 	if err != nil {
 		return err

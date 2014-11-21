@@ -2,7 +2,7 @@
 // Use of this source code is governed by an ISC
 // license that can be found in the LICENSE file.
 
-package btcscript
+package rddscript
 
 import (
 	"encoding/binary"
@@ -25,10 +25,10 @@ const (
 // For example, the following would build a 2-of-3 multisig script for usage in
 // a pay-to-script-hash (although in this situation MultiSigScript() would be a
 // better choice to generate the script):
-// 	builder := btcscript.NewScriptBuilder()
-// 	builder.AddOp(btcscript.OP_2).AddData(pubKey1).AddData(pubKey2)
-// 	builder.AddData(pubKey3).AddOp(btcscript.OP_3)
-// 	builder.AddOp(btcscript.OP_CHECKMULTISIG)
+// 	builder := rddscript.NewScriptBuilder()
+// 	builder.AddOp(rddscript.OP_2).AddData(pubKey1).AddData(pubKey2)
+// 	builder.AddData(pubKey3).AddOp(rddscript.OP_3)
+// 	builder.AddOp(rddscript.OP_CHECKMULTISIG)
 // 	fmt.Printf("Final multi-sig script: %x\n", builder.Script())
 type ScriptBuilder struct {
 	script []byte
